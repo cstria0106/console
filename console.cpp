@@ -1,5 +1,3 @@
-
-#include <queue>
 #define IS_UNIX() defined(__APPLE__) || defined(__linux__)
 #define IS_WINDOWS() defined(_WIN32)
 
@@ -16,6 +14,7 @@
 #include "console.h"
 #include <chrono>
 #include <cstdio>
+#include <deque>
 #include <vector>
 
 #define BOX_VERTICAL_STRING "┃"
@@ -148,8 +147,8 @@ void cls() {
 
 Vec<Key> pressed;
 
-Vec<Vec<bool>> updated;
 Vec<Vec<String>> screen;
+Vec<Vec<String>> previousScreen;
 
 bool logsUpdated;
 std::deque<String> logs;
@@ -169,8 +168,8 @@ void init() {
   scrollok(stdscr, TRUE);
 #endif
 
-  updated = Vec<Vec<bool>>(SCREEN_WIDTH, Vec<bool>(SCREEN_HEIGHT, false));
   screen = Vec<Vec<String>>(SCREEN_WIDTH, Vec<String>(SCREEN_HEIGHT, " "));
+  previousScreen = screen;
   logs = std::deque<String>(LOG_COUNT);
 }
 
@@ -213,15 +212,16 @@ void wait() {
   pressed.clear();
   for (int i = 0; i < SCREEN_WIDTH; i++) {
     for (int j = 0; j < SCREEN_HEIGHT; j++) {
-      if (updated[i][j]) {
+      if (previousScreen[i][j] != screen[i][j]) {
         setCursorPosition(i, j);
         printf("%s", screen[i][j].c_str());
-        updated[i][j] = false;
       }
     }
   }
   setCursorPosition(SCREEN_WIDTH, SCREEN_HEIGHT);
   fflush(stdout);
+
+  previousScreen = screen;
 
   // sleep until next frame
   if (startTime.time_since_epoch().count() == 0)
@@ -291,7 +291,6 @@ void draw(int x, int y, const char *s, int index) {
     return;
 
   screen[x][y] = c;
-  updated[x][y] = true;
 }
 
 void draw(int x, int y, const char *s) {
