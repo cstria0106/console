@@ -64,6 +64,12 @@ Key key() {
   }
 
   switch (c) {
+  case 122:
+    return K_Z;
+  case 120:
+    return K_X;
+  case 32:
+    return K_SPACE;
   case 27:
     return K_ESC;
   case 13:
@@ -122,6 +128,7 @@ Key key() {
       return K_ESC;
     }
   }
+
   switch (c) {
   case 10:
     return K_ENTER;
